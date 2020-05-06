@@ -137,7 +137,7 @@ class DeepQNetwork:
         s_t = np.concatenate((game_state, game_state, game_state, game_state), axis=2)        
         
         while not game.game_end():
-            a_t, action_index = self.choose_action(s_t, score)                 
+            a_t, action_index = self.choose_action(s_t)                 
             # run the selected action and observe next state and reward
             move = action_index                    
             r_t = game.do_move(move)
@@ -245,7 +245,9 @@ class DeepQNetwork:
 if __name__ == "__main__":
 
     tf.reset_default_graph()
-    sess = tf.Session()   
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
     game = Game()         
     dqn = DeepQNetwork(sess, game)          
     dqn.train()  

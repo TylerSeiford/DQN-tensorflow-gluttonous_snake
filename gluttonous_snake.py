@@ -33,7 +33,8 @@ fpsClock = pygame.time.Clock()
 screen = pygame.display.set_mode((game.settings.width*15, game.settings.height*15))
 pygame.display.set_caption('Gluttonous')
 
-crash_sound = pygame.mixer.Sound('./sound/crash.wav') 
+crash_sound = pygame.mixer.Sound('./sound/crash.wav')
+crash_sound.set_volume(0.125)
 
 def text_objects(text, font, color = black):
     text_surface = font.render(text, True, color)
@@ -153,7 +154,10 @@ def DQN():
     game.restart_game()
     
     tf.reset_default_graph()
-    sess = tf.Session()            
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)            
+
 
     dqn = DeepQNetwork(sess, game)  
         
