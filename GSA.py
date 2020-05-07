@@ -100,7 +100,7 @@ class GravitationalSnakeAgent:
  
         q_eval = self.sess.run(self.q_eval, feed_dict={self.state : [s_t]})[0]
         action_index = np.argmax(q_eval)
-            
+
         a_t[action_index] = 1
             
         return a_t, action_index
@@ -150,7 +150,7 @@ class GravitationalSnakeAgent:
                 game_num += 1
                 scores.append(score)
 
-                if game_num % 10 == 0:
+                if game_num % 1 == 0:
                     score_mean = np.mean(scores)
                     score_means.append(score_mean)
                     print("game: {} step length: {} score: {:.2f}".format(game_num, step, score_mean))

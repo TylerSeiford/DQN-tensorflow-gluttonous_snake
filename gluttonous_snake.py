@@ -23,7 +23,9 @@ bright_red = pygame.Color(255, 0, 0)
 blue = pygame.Color(32, 178, 170)
 bright_blue = pygame.Color(32, 200, 200)
 yellow =  pygame.Color(255, 205, 0) 
-bright_yellow =  pygame.Color(255, 255, 0) 
+bright_yellow =  pygame.Color(255, 255, 0)
+purple = pygame.Color(196, 0, 196)
+bright_purple = pygame.Color(255, 0, 255)
 
 game = Game()
 rect_len = game.settings.rect_len
@@ -87,8 +89,9 @@ def initial_interface():
 
         button('Go!', 80, 210, 80, 40, green, bright_green, game_loop, 'human')
         button('Quit', 270, 210, 80, 40, red, bright_red, quitgame)
-        button('AI 1', 80, 280, 80, 40, blue, bright_blue, game_loop, 'search_ai')
-        button('AI 2', 270, 280, 80, 40, yellow, bright_yellow, DQN)
+        button('BFS AI', 80, 280, 80, 40, blue, bright_blue, game_loop, 'search_ai')
+        button('DQN AI', 270, 280, 80, 40, yellow, bright_yellow, DQN)
+        button('GSA AI', 80, 350, 80, 40, purple, bright_purple, GSA)
         
         pygame.display.update()
         pygame.time.Clock().tick(15)
@@ -188,7 +191,50 @@ def DQN():
         
         fpsClock.tick(15)  
 
-    crash()        
+    crash()
+
+def GSA():
+    import tensorflow as tf
+    from GSA import GravitationalSnakeAgent as GSAgent
+    import numpy as np
+
+    game.restart_game()
+
+    tf.reset_default_graph()
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+
+
+    gsa = GSAgent(sess, game)
+        
+    game_state = game.current_state()
+
+    start_state = np.concatenate((game_state, game_state, game_state, game_state), axis=2)
+    s_t = start_state
+    
+    while not game.game_end():
+        _, action_index = gsa.choose_action(s_t)
+        
+        move = action_index
+        game.do_move(move)
+        
+        pygame.event.pump()
+        
+        game_state = game.current_state()
+        s_t = np.append(game_state, s_t[:, :, :-2], axis=2)
+        
+        screen.fill(black)
+        
+        game.snake.blit(rect_len, screen)
+        game.strawberry.blit(screen)
+        game.blit_score(white, screen)
+        
+        pygame.display.flip()
+        
+        fpsClock.tick(15)
+
+    crash()
                   
 if __name__ == "__main__":
     initial_interface()
