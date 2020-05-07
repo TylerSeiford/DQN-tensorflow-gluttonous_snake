@@ -194,7 +194,7 @@ class DeepQNetwork:
                
         if self.learn_step % self.replace_target_iter == 0:
             self.sess.run(self.target_replace_op)
-#            print('\n*****target params replaced*****\n')              
+            #   print('\n*****target params replaced*****\n')              
             
         if self.learn_step % 100000 == 0:
             self.saver.save(sess, self.model_file)
@@ -241,7 +241,8 @@ class DeepQNetwork:
         plt.ylabel('Score')
         plt.xlabel('training steps')
         plt.show()
-        
+
+    
 if __name__ == "__main__":
 
     tf.reset_default_graph()
@@ -249,5 +250,5 @@ if __name__ == "__main__":
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
     game = Game()         
-    dqn = DeepQNetwork(sess, game)          
-    dqn.train()  
+    dqn = DeepQNetwork(sess, game)
+    dqn.train()
