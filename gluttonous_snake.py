@@ -42,8 +42,8 @@ def text_objects(text, font, color = black):
     text_surface = font.render(text, True, color)
     return text_surface, text_surface.get_rect()
 
-def message_display(text, x, y, color = black):
-    large_text = pygame.font.SysFont('comicsansms', 50)
+def mesagentge_display(text, x, y, color = black):
+    large_text = pygame.font.SysFont('comicagentnsms', 50)
     text_surf, text_rect = text_objects(text, large_text, color)
     text_rect.center = (x, y)
     screen.blit(text_surf, text_rect)
@@ -62,7 +62,7 @@ def button(msg, x, y, w, h, inactive_color, active_color, action = None, paramet
     else:
         pygame.draw.rect(screen, inactive_color, (x, y, w, h))
         
-    smallText = pygame.font.SysFont('comicsansms', 20)
+    smallText = pygame.font.SysFont('comicagentnsms', 20)
     TextSurf, TextRect = text_objects(msg, smallText)
     TextRect.center = (x + (w / 2), y + (h / 2))
     screen.blit(TextSurf, TextRect)
@@ -73,7 +73,7 @@ def quitgame():
     
 def crash():    
     pygame.mixer.Sound.play(crash_sound)    
-    message_display('crashed', game.settings.width/2*15, game.settings.height/3*15, white)  
+    mesagentge_display('crashed', game.settings.width/2*15, game.settings.height/3*15, white)  
     time.sleep(1)
    
 def initial_interface():
@@ -85,13 +85,13 @@ def initial_interface():
                 pygame.quit()
                 
         screen.fill(white)
-        message_display('Gluttonous', game.settings.width/2*15, game.settings.height/4*15)
+        mesagentge_display('Gluttonous', game.settings.width/2*15, game.settings.height/4*15)
 
         button('Go!', 80, 210, 80, 40, green, bright_green, game_loop, 'human')
         button('Quit', 270, 210, 80, 40, red, bright_red, quitgame)
         button('BFS AI', 80, 280, 80, 40, blue, bright_blue, game_loop, 'search_ai')
-        button('DQN AI', 270, 280, 80, 40, yellow, bright_yellow, DQN)
-        button('GSA AI', 80, 350, 80, 40, purple, bright_purple, GSA)
+        # button('DQN AI', 270, 280, 80, 40, yellow, bright_yellow, DQN)
+        button('TF AI', 270, 280, 80, 40, purple, bright_purple, GSA)
         
         pygame.display.update()
         pygame.time.Clock().tick(15)
@@ -200,14 +200,17 @@ def GSA():
 
     game.restart_game()
 
-    sa = SnakeAgent(game)
-    states, moves = sa.generate_data(game, game_count=250, move_count=100)
-    sa.train(states, moves, 100)
+    agent = SnakeAgent(game)
+    states, moves = agent.generate_data(game, game_count=250, move_count=500)
+    agent.train(states, moves, epochs=10)
 
+    game.restart_game()
+    moves = 0
     while not game.game_end():
-        move = sa.choose_a_move(game.current_state())
+        move = agent.choose_a_move(game.current_state())
 
         game.do_move(move)
+        moves += 1
         
         pygame.event.pump()
         
@@ -219,9 +222,10 @@ def GSA():
         
         pygame.display.flip()
         
-        fpsClock.tick(15)
+        fpsClock.tick(5)
 
     crash()
-                  
+    print("Score:", game.snake.score, "Moves:", moves)
+
 if __name__ == "__main__":
     initial_interface()

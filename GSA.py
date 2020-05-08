@@ -31,7 +31,7 @@ class SnakeAgent:
 
         self.probability_model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
     def train(self, gameStates, optimalMoves, epochs=250):
-        self.model.fit(gameStates, optimalMoves, epochs=250, use_multiprocessing=True)
+        self.model.fit(gameStates, optimalMoves, epochs=epochs, use_multiprocessing=True)
 
     def play_a_game(self):
         game.restart_game()
