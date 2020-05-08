@@ -191,6 +191,8 @@ class DeepQNetwork:
                  self.a : a_batch,
                  self.state : s_batch}
                 )
+
+        print(sess.graph.level)
                
         if self.learn_step % self.replace_target_iter == 0:
             self.sess.run(self.target_replace_op)
