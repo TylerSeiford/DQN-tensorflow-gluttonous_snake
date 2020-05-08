@@ -89,11 +89,17 @@ for i in range(10):
                         valueI += r * random.random() * accel
                         print("Old:", agents[i].model.layers[k].weights[l][m][n])
                         print("New:", tf.convert_to_tensor(valueI, dtype=float32))
-                        agents[j].model.layers[k] = keras.layers.Dense(31, activation='relu')
+                        keras.initializers.Constant(valueI)
+                        print(agents[j].model.layers[k].weights)
+                        break
+                    break
 
                         # print("(", i, j, k, l, m, n, ")", value)
             else:
                 continue
+            break
+        break
+    break
 
 #            base_agent.f.acc += ((self.config.g * base_agent.score * other_agent.score) / ((other_agent.f.value - base_agent.f.value) ^ 2)) / base_agent.score
 #        base_agent.f.value += 2 * random.random() * base_agent.f.acc
