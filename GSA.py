@@ -8,18 +8,20 @@ from numpy import *
 import matplotlib.pyplot as plt
 import math
 import random
+import pygame
 
 # Game Library
 from game import Game
+from search_ai import get_move
 
 # Definition of a Snake Agent
-class GravitationalSnakeAgent:
+class SnakeAgent:
     def __init__(self, game):
         self.game = game
 
         self.model = keras.Sequential([
             keras.layers.Flatten(input_shape=(self.game.settings.width+2, self.game.settings.height+2, 2)),
-            keras.layers.Dense(32, activation='relu'),
+            keras.layers.Dense(128, activation='relu'),
             keras.layers.Dense(4)
         ])
 
@@ -28,6 +30,8 @@ class GravitationalSnakeAgent:
                     metrics=['accuracy'])
 
         self.probability_model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
+    def train(self, gameStates, optimalMoves, epochs=250):
+        self.model.fit(gameStates, optimalMoves, epochs=250, use_multiprocessing=True)
 
     def play_a_game(self):
         game.restart_game()
@@ -44,62 +48,35 @@ class GravitationalSnakeAgent:
             _state[0] = state
             move = np.argmax(self.probability_model.predict(_state))
             return move
+    def generate_data(self, game, game_count=784, move_count=50):
+        states = []
+        moves = []
+        games_played = 0
+        moves_played = 0
+
+        while games_played < game_count:
+            game.restart_game()
+            moves_played = 0
+            while not game.game_end() and moves_played < move_count:
+                state = game.current_state()
+                move = get_move(game)
+                reward = game.do_move(move)
+                # print(move, reward)
+
+                states.append(state)
+                moves.append(move)
+                moves_played += 1
+            games_played += 1
+
+        statesArr = np.asarray(states)
+        movesArr = np.asarray(moves)
+        print("Data:", len(states))
+        return statesArr, movesArr
 
 
+if __name__ == "__main__":
+    game = Game()
+    agent = SnakeAgent(game)
+    states, moves = agent.generate_data(game)
 
-game = Game()
-agents = []
-scores = []
-
-# create agents and scores
-for i in range(10):
-    agents.append(GravitationalSnakeAgent(game))
-    scores.append(0)
-
-print(len(agents), len(scores))
-
-# run games
-for i in range(10):
-    scores[i] = agents[i].play_a_game()
-    scores[i] += 1
-    print(i, ": ", scores[i])
-
-
-# gsa train
-g = 6.674e-11
-r = 2
-# Loop over every agent
-for i in range(10):
-    # Loop over every layer but the first
-    for k in range(1, 3):
-        # Loop over every trainable weight in the layer
-        for l in range(len(agents[i].model.layers[k].weights)):
-            if(l == 0):
-                for m in range(agents[i].model.layers[k].weights[l].shape[0]):
-                    for n in range(agents[i].model.layers[k].weights[l][m].shape[0]):
-
-                        valueI = agents[i].model.layers[k].weights[l][m][n].numpy()
-                        accel = 0
-
-                        # Loop over every other agent
-                        for j in range(10):
-                            if i != j:
-                                valueJ = agents[j].model.layers[k].weights[l][m][n].numpy()
-                                accel += ((g * scores[i] * scores[j]) / math.pow(valueJ - valueI, 2)) / scores[i]
-                        valueI += r * random.random() * accel
-                        print("Old:", agents[i].model.layers[k].weights[l][m][n])
-                        print("New:", tf.convert_to_tensor(valueI, dtype=float32))
-                        keras.initializers.Constant(valueI)
-                        print(agents[j].model.layers[k].weights)
-                        break
-                    break
-
-                        # print("(", i, j, k, l, m, n, ")", value)
-            else:
-                continue
-            break
-        break
-    break
-
-#            base_agent.f.acc += ((self.config.g * base_agent.score * other_agent.score) / ((other_agent.f.value - base_agent.f.value) ^ 2)) / base_agent.score
-#        base_agent.f.value += 2 * random.random() * base_agent.f.acc
+    agent.train(states, moves)

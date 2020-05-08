@@ -195,34 +195,21 @@ def DQN():
 
 def GSA():
     import tensorflow as tf
-    from GSA import GravitationalSnakeAgent as GSAgent
+    from GSA import SnakeAgent
     import numpy as np
 
     game.restart_game()
 
-    tf.reset_default_graph()
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    sess = tf.Session(config=config)
+    sa = SnakeAgent(game)
+    states, moves = sa.generate_data(game, game_count=250, move_count=100)
+    sa.train(states, moves, 100)
 
-
-    gsa = GSAgent(sess, game)
-        
-    game_state = game.current_state()
-
-    start_state = np.concatenate((game_state, game_state, game_state, game_state), axis=2)
-    s_t = start_state
-    
     while not game.game_end():
-        _, action_index = gsa.choose_action(s_t)
-        
-        move = action_index
+        move = sa.choose_a_move(game.current_state())
+
         game.do_move(move)
         
         pygame.event.pump()
-        
-        game_state = game.current_state()
-        s_t = np.append(game_state, s_t[:, :, :-2], axis=2)
         
         screen.fill(black)
         
