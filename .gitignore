@@ -1,2 +1,9 @@
 __py**
-model/**
+model**
+training**
+model/checkpoint
+model/snake.data-00000-of-00001
+model/snake.index
+model/snake.meta
+**2.py
+report.txt

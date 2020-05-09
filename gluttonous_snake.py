@@ -90,8 +90,8 @@ def initial_interface():
         button('Go!', 80, 210, 80, 40, green, bright_green, game_loop, 'human')
         button('Quit', 270, 210, 80, 40, red, bright_red, quitgame)
         button('BFS AI', 80, 280, 80, 40, blue, bright_blue, game_loop, 'search_ai')
-        # button('DQN AI', 270, 280, 80, 40, yellow, bright_yellow, DQN)
-        button('TF AI', 270, 280, 80, 40, purple, bright_purple, GSA)
+        button('TF AI', 270, 280, 80, 40, purple, bright_purple, RunSnakeAgent)
+        button('Train TF', 80, 350, 80, 40, yellow, bright_yellow, TrainSnakeAgent)
         
         pygame.display.update()
         pygame.time.Clock().tick(15)
@@ -193,7 +193,7 @@ def DQN():
 
     crash()
 
-def GSA():
+def RunSnakeAgent():
     import tensorflow as tf
     from GSA import SnakeAgent
     import numpy as np
@@ -201,31 +201,45 @@ def GSA():
     game.restart_game()
 
     agent = SnakeAgent(game)
-    states, moves = agent.generate_data(game, game_count=250, move_count=500)
-    agent.train(states, moves, epochs=10)
+    try:
+        agent.restore()
+    except:
+        print("Failed to load training data!")
+    else:
+        game.restart_game()
+        moves = 0
+        while not game.game_end():
+            move = agent.choose_a_move(game.current_state())
+
+            game.do_move(move)
+            moves += 1
+            
+            pygame.event.pump()
+            
+            screen.fill(black)
+            
+            game.snake.blit(rect_len, screen)
+            game.strawberry.blit(screen)
+            game.blit_score(white, screen)
+            
+            pygame.display.flip()
+            
+            fpsClock.tick(5)
+
+        crash()
+        print("Score:", game.snake.score, "Moves:", moves)
+
+def TrainSnakeAgent():
+    import tensorflow as tf
+    from GSA import SnakeAgent
 
     game.restart_game()
-    moves = 0
-    while not game.game_end():
-        move = agent.choose_a_move(game.current_state())
 
-        game.do_move(move)
-        moves += 1
-        
-        pygame.event.pump()
-        
-        screen.fill(black)
-        
-        game.snake.blit(rect_len, screen)
-        game.strawberry.blit(screen)
-        game.blit_score(white, screen)
-        
-        pygame.display.flip()
-        
-        fpsClock.tick(5)
-
-    crash()
-    print("Score:", game.snake.score, "Moves:", moves)
+    agent = SnakeAgent(game)
+    states, moves = agent.generate_data(game, game_count=250, move_count=500)
+    agent.train(states, moves, epochs=10)
+    agent.save()
+    print("Trained TensorFlow!")
 
 if __name__ == "__main__":
     initial_interface()

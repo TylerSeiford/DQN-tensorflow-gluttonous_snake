@@ -2,12 +2,15 @@
 import tensorflow as tf
 from tensorflow import keras
 
+# Python libraries
+import os
+import math
+import random
+
 # Helper libraries
 import numpy as np
 from numpy import *
 import matplotlib.pyplot as plt
-import math
-import random
 import pygame
 
 # Game Library
@@ -18,6 +21,8 @@ from search_ai import get_move
 class SnakeAgent:
     def __init__(self, game):
         self.game = game
+        self.checkpoint_path = "training/cp-{epoch:04d}.ckpt"
+        self.checkpoint_dir = os.path.dirname(self.checkpoint_path)
 
         self.model = keras.Sequential([
             keras.layers.Flatten(input_shape=(self.game.settings.width+2, self.game.settings.height+2, 2)),
@@ -31,8 +36,15 @@ class SnakeAgent:
 
         self.probability_model = tf.keras.Sequential([self.model, tf.keras.layers.Softmax()])
     def train(self, gameStates, optimalMoves, epochs=250):
-        self.model.fit(gameStates, optimalMoves, epochs=epochs, use_multiprocessing=True)
-
+        cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=self.checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+        self.model.fit(gameStates, optimalMoves, epochs=epochs, use_multiprocessing=True, callbacks=[cp_callback])
+    def save(self):
+        self.model.save_weights(self.checkpoint_path.format(epoch=0))
+    def restore(self):
+        latest = tf.train.latest_checkpoint(self.checkpoint_dir)
+        self.model.load_weights(latest)
     def play_a_game(self):
         game.restart_game()
         while not game.game_end():
@@ -77,6 +89,10 @@ class SnakeAgent:
 if __name__ == "__main__":
     game = Game()
     agent = SnakeAgent(game)
-    states, moves = agent.generate_data(game)
+    states, moves = agent.generate_data(game, game_count=5, move_count=100)
+    agent.train(states, moves, epochs=10)
+    agent.save()
 
-    agent.train(states, moves)
+    game.restart_game()
+    agent2 = SnakeAgent(game)
+    agent.restore()
