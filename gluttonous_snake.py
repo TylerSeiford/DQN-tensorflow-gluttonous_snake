@@ -236,10 +236,10 @@ def TrainSnakeAgent():
     game.restart_game()
 
     agent = SnakeAgent(game)
-    states, moves = agent.generate_data(game, game_count=250, move_count=500)
-    agent.train(states, moves, epochs=10)
+    states, moves = agent.generate_data(game, game_count=10, move_count=100)
+    trainingAccuracy = agent.train(states, moves, epochs=5)
+    print("Trained TensorFlow! ", trainingAccuracy)
     agent.save()
-    print("Trained TensorFlow!")
 
 if __name__ == "__main__":
     initial_interface()
