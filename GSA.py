@@ -113,18 +113,17 @@ def genData(validation_states, validation_moves, game_count=10, move_count=50, e
     scores = []
     for i in range(10):
         scores.append(agent.play_a_game())
-    
-    print("Tested Games! ", mean(scores))
-    print(scores)
+    meanScore = statistics.mean(scores)
+    print("Tested Games! ", meanScore)
     
     agent.save()
 
     print("")
     print("Games, Moves, Epochs, Training, Validation, Playing")
-    print(game_count, move_count, epochs, trainingAccuracy, testingAccuracy, mean(scores))
+    print(game_count, move_count, epochs, trainingAccuracy, testingAccuracy, meanScore)
     del agent
     del game
-    return trainingAccuracy, testingAccuracy, mean(scores)
+    return trainingAccuracy, testingAccuracy, meanScore
 
 if __name__ == "__main__":
     print("Generating validation data")
